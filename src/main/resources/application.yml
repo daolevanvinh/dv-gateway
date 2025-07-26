@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: DV Spring Template
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+server:
+  port: 8080
+
+logging:
+  pattern:
+    console: '%d{yyyy-MM-dd HH:mm:ss.SSS} | r=%X{requestId} u=%X{user} a=%X{authorities} | %-5level %logger{36} - %msg%n'
+  level:
+    org.springframework: info
+
+app:
+  cors:
+    allowed-origins: '*'
