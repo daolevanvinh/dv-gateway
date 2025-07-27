@@ -4,10 +4,10 @@ WORKDIR /app
 COPY gradlew .
 COPY gradle gradle
 COPY build.gradle settings.gradle ./
+COPY gradle.properties ./
 
 # Install curl and nano in the build stage
 RUN apt-get update && \
-    apt-get install -y iputils-ping && \
     apt-get install -y curl nano && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*

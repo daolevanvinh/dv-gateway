@@ -1,18 +1,38 @@
 spring:
   application:
-    name: DV Spring Template
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB}
-    username: ${POSTGRES_USER}
-    password: ${POSTGRES_PASSWORD}
-  jpa:
-    hibernate:
-      ddl-auto: none
-    show-sql: false
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+    name: API-GATEWAY
+  main:
+    web-application-type: reactive
+    allow-bean-definition-overriding: true
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: dv_user_service_route
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/api/users/**
+              filters:
+                - StripPrefix=0
+
+            - id: dv_common_service_route
+              uri: lb://COMMON-SERVICE
+              predicates:
+                - Path=/api/common/**
+              filters:
+                - StripPrefix=0
+          discovery:
+            locator:
+              enabled: true
+              lower-case-service-id: true
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://dv-eureka-server:8761/eureka/
 
 server:
   port: 8080
@@ -21,7 +41,15 @@ logging:
   pattern:
     console: '%d{yyyy-MM-dd HH:mm:ss.SSS} | r=%X{requestId} u=%X{user} a=%X{authorities} | %-5level %logger{36} - %msg%n'
   level:
-    org.springframework: info
+    root: info
+    org:
+      springframework:
+        security: DEBUG
+        cloud:
+          gateway: DEBUG
+    dv.service.gateway.security.JwtAuthenticationGatewayFilterFactory: DEBUG
+    org.springframework.web.reactive.function.client: DEBUG
+    reactor.netty.http.client: DEBUG
 
 app:
   cors:

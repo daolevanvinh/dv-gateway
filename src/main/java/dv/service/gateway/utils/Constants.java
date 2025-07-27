@@ -1,4 +1,4 @@
-package dv.service.template.utils;
+package dv.service.gateway.utils;
 
 
 import java.util.UUID;

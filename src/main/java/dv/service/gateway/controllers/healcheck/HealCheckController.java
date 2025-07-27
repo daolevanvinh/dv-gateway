@@ -1,6 +1,6 @@
-package dv.service.template.controllers.healcheck;
+package dv.service.gateway.controllers.healcheck;
 
-import dv.common.dtos.AppResponse;
+import dv.service.gateway.dtos.AppResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
