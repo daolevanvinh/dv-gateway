@@ -139,6 +139,7 @@ public class JwtAuthenticationGatewayFilterFactory implements GlobalFilter {
         var objectMapper = new ObjectMapper();
 
         var res = AppResponse.error(err, HttpStatus.UNAUTHORIZED);
+        exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
         String jsonResponse = objectMapper.writeValueAsString(res);
         exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
         return exchange.getResponse().writeWith(

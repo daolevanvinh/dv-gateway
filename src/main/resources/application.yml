@@ -53,4 +53,5 @@ logging:
 
 app:
   cors:
-    allowed-origins: '*'
+    allowed-origins:
+      http://localhost:3000
