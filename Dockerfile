@@ -1,4 +1,4 @@
-FROM openjdk:24-slim AS build
+FROM openjdk:24-ea-24-slim-bookworm AS build
 
 WORKDIR /app
 COPY gradlew .
@@ -19,7 +19,7 @@ COPY src src
 
 RUN ./gradlew build -x test
 
-FROM openjdk:24-slim
+FROM openjdk:24-ea-24-slim-bookworm
 WORKDIR /app
 
 # Install curl and nano in the final stage
