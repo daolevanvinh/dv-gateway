@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
+import org.springframework.core.Ordered;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
@@ -26,7 +27,7 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 @Component
-@Order(-1)
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class JwtAuthenticationGatewayFilterFactory implements GlobalFilter {
     private static final String USER_ID_HEADER = "X-User-Id";
     private static final String USER_ROLES_HEADER = "X-User-Roles";
@@ -59,6 +60,10 @@ public class JwtAuthenticationGatewayFilterFactory implements GlobalFilter {
             "/api/users/v1/public/auth/validate-access-token"
     );
 
+    private static final List<String> WS_ENDPOINTS = List.of(
+            "/ws/aurora-documents/v1"
+    );
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
@@ -79,6 +84,15 @@ public class JwtAuthenticationGatewayFilterFactory implements GlobalFilter {
 
         if (hasToken) {
             token = authHeader.replace("Bearer ", "");
+        }
+
+        boolean isWebsocket = WS_ENDPOINTS.stream().anyMatch(e -> StringUtils.equalsIgnoreCase(e, requestPath));
+        if (isWebsocket) {
+            List<String> tokenParams = request.getQueryParams().get("accessToken");
+            if (tokenParams != null && !tokenParams.isEmpty()) {
+                token = tokenParams.getFirst();
+                hasToken = true;
+            }
         }
 
         if (!hasToken) {
@@ -108,16 +122,15 @@ public class JwtAuthenticationGatewayFilterFactory implements GlobalFilter {
                 .flatMap(response -> {
                     if (response.getMessage().equalsIgnoreCase("success")) {
                         var userInfo = response.getData();
-                        ServerHttpRequest modifiedRequest = request.mutate()
+                        var modifiedRequestBuilder = request.mutate()
                                 .header(USER_ID_HEADER, userInfo.getUserId().toString())
                                 .header(EMAIL_HEADER, userInfo.getEmail())
                                 .header(PHONE_NUMBER_HEADER, userInfo.getPhoneNumber())
                                 .header(DISPLAY_NAME_HEADER, userInfo.getDisplayName())
                                 .header(EMAIL_VERIFIED_HEADER, userInfo.getEmailVerified().toString())
-                                .header(USER_ROLES_HEADER, StringUtils.join(userInfo.getRoles(), ","))
-                                .build();
+                                .header(USER_ROLES_HEADER, StringUtils.join(userInfo.getRoles(), ","));
                         log.info("Authenticated user via user-service: {} for path: {}", userInfo.getUserId(), requestPath);
-                        return chain.filter(exchange.mutate().request(modifiedRequest).build());
+                        return chain.filter(exchange.mutate().request(modifiedRequestBuilder.build()).build());
                     } else {
                         log.info("Token invalid according to user-service for path: {}", requestPath);
                         return this.onError(exchange, "Unauthorized access: Token invalid");
