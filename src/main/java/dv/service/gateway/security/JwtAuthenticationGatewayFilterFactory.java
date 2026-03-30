@@ -24,6 +24,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
 
 @Component
@@ -126,7 +129,7 @@ public class JwtAuthenticationGatewayFilterFactory implements GlobalFilter {
                                 .header(USER_ID_HEADER, userInfo.getUserId().toString())
                                 .header(EMAIL_HEADER, userInfo.getEmail())
                                 .header(PHONE_NUMBER_HEADER, userInfo.getPhoneNumber())
-                                .header(DISPLAY_NAME_HEADER, userInfo.getDisplayName())
+                                .header(DISPLAY_NAME_HEADER, URLEncoder.encode(userInfo.getDisplayName(), StandardCharsets.UTF_8))
                                 .header(EMAIL_VERIFIED_HEADER, userInfo.getEmailVerified().toString())
                                 .header(USER_ROLES_HEADER, StringUtils.join(userInfo.getRoles(), ","));
                         log.info("Authenticated user via user-service: {} for path: {}", userInfo.getUserId(), requestPath);
