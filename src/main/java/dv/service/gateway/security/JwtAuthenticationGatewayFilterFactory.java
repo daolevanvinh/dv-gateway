@@ -1,6 +1,7 @@
 package dv.service.gateway.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dv.service.gateway.config.exceptions.BadRequestException;
 import dv.service.gateway.config.exceptions.UnAuthenticateException;
 import dv.service.gateway.dtos.AppResponse;
 import dv.service.gateway.dtos.BasicUserInfo;
@@ -10,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
+import org.springframework.cloud.gateway.support.NotFoundException;
 import org.springframework.core.Ordered;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.annotation.Order;
@@ -140,12 +142,10 @@ public class JwtAuthenticationGatewayFilterFactory implements GlobalFilter {
                     }
                 })
                 .onErrorResume(e -> {
-                    System.err.println("Error calling user-service for token validation: " + e.getMessage());
-                    if (OPTIONAL_AUTH_URL_PATTERNS.stream().anyMatch(pattern -> pathMatcher.match(pattern, requestPath))) {
-                        log.info("Path OPTIONAL AUTH with token validation error. Allowing unauthenticated access.");
-                        return chain.filter(exchange);
+                    if (e instanceof NotFoundException) {
+                        return this.onError(exchange, "There was an unexpected error, please contact to administrator.");
                     } else {
-                        return this.onError(exchange, "Unauthorized access: Token validation failed");
+                        return this.onError(exchange, "");
                     }
                 });
     }

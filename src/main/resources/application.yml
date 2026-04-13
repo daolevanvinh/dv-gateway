@@ -28,6 +28,11 @@ spring:
               uri: lb://COMMON-SERVICE
               predicates:
                 - Path=/api/common/**
+
+            - id: dv_file_service
+              uri: lb://FILE-SERVICE
+              predicates:
+                - Path=/api/files/**
           discovery:
             locator:
               enabled: true
