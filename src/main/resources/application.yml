@@ -33,6 +33,11 @@ spring:
               uri: lb://FILE-SERVICE
               predicates:
                 - Path=/api/files/**
+
+            - id: dv_webtoons_service
+              uri: lb://WEBTOONS-SERVICE
+              predicates:
+                - Path=/api/webtoons/**
           discovery:
             locator:
               enabled: true
